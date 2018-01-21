@@ -1,5 +1,7 @@
 # g-status
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/luftywiranda13/g-status.svg)](https://greenkeeper.io/)
+
 > Get the change between index (or staging-area) and working directory of a `git` repository
 
 [![Package Version](https://img.shields.io/npm/v/g-status.svg?style=flat-square)](https://www.npmjs.com/package/g-status)
