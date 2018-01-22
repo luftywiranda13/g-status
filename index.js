@@ -31,10 +31,14 @@ module.exports = options => {
       }));
     })
     .then(filesObj => {
-      const path = filesObj.map(x => x.path);
-      const matching = matcher(path, arrify(opts.patterns));
+      if (opts.patterns !== '*') {
+        const path = filesObj.map(x => x.path);
+        const matching = matcher(path, arrify(opts.patterns));
 
-      return filesObj.filter(x => matching.includes(x.path));
+        return filesObj.filter(x => matching.includes(x.path));
+      }
+
+      return filesObj;
     })
     .then(res => {
       if (opts.status.index !== '*') {
