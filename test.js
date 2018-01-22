@@ -65,7 +65,7 @@ describe('dirty repo', () => {
   });
 
   test('status', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     await expect(
       gStatus({ cwd: tmpPath, status: { index: 'MA' } })
@@ -77,5 +77,9 @@ describe('dirty repo', () => {
     await expect(
       gStatus({ cwd: tmpPath, status: { workingTree: ' ' } })
     ).resolves.toEqual([{ path: '.travis.yml', index: 'A', workingTree: ' ' }]);
+
+    await expect(
+      gStatus({ cwd: tmpPath, status: { index: 'M', workingTree: 'M' } })
+    ).resolves.toEqual([{ path: 'index.js', index: 'M', workingTree: 'M' }]);
   });
 });

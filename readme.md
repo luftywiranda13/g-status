@@ -11,10 +11,10 @@ Think of `git status` or `git status --porcelain`, but returns a _ready-to-consu
 
 ## Why
 
-* Actively maintained
+* Maintained
 * Accepts simple [wildcard matching](https://github.com/sindresorhus/matcher)
 * Promise API
-* Ability to filter with status codes, see [Status option](#status)
+* Ability to get specific results based on status codes, see [Status option](#status)
 * Knows which files are partially/fully-staged
 
 ## Installation
@@ -47,12 +47,13 @@ gStatus().then(res => {
   */
 });
 
+// Patterns for `path`
 gStatus({ patterns: ['!*.js', '!*.md'] }).then(res => {
   console.log(res);
   //=> [{ path: '.travis.yml', index: 'A', workingTree: ' ' }]
 });
 
-// To get the list of files marked as `Modified` or `Added` in the staging area,
+// Files marked as `Modified` or `Added` in the staging area,
 gStatus({ status: { index: 'MA' } }).then(res => {
   console.log(res);
   /*
@@ -63,11 +64,19 @@ gStatus({ status: { index: 'MA' } }).then(res => {
   */
 });
 
-// To get the list of files that arenʼt changed in the working tree
+// Files that arenʼt changed in the working tree
 gStatus({ status: { workingTree: ' ' } }).then(res => {
   console.log(res);
   //=> [{ path: '.travis.yml', index: 'A', workingTree: ' ' }]
 });
+
+// Files that are marked as `Modified` both in staging area and working tree
+gStatus({ cwd: tmpPath, status: { index: 'M', workingTree: 'M' } }).then(
+  res => {
+    console.log(res);
+    //=> [{ path: 'index.js', index: 'M', workingTree: 'M' }]
+  }
+);
 ```
 
 ## API
