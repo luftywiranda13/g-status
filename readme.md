@@ -71,12 +71,10 @@ gStatus({ status: { workingTree: ' ' } }).then(res => {
 });
 
 // Files that are marked as `Modified` both in staging area and working tree
-gStatus({ cwd: tmpPath, status: { index: 'M', workingTree: 'M' } }).then(
-  res => {
-    console.log(res);
-    //=> [{ path: 'index.js', index: 'M', workingTree: 'M' }]
-  }
-);
+gStatus({ status: { index: 'M', workingTree: 'M' } }).then(res => {
+  console.log(res);
+  //=> [{ path: 'index.js', index: 'M', workingTree: 'M' }]
+});
 ```
 
 ## API
