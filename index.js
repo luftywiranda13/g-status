@@ -23,41 +23,41 @@ module.exports = options => {
 
   return git(opts.cwd)
     .status()
-    .then(summary => {
-      return summary.files.map(x => ({
-        path: x.path,
-        index: x.index,
-        workingTree: x.working_dir,
-      }));
-    })
-    .then(filesObj => {
-      if (opts.patterns !== '*') {
-        const path = filesObj.map(x => x.path);
-        const matching = matcher(path, arrify(opts.patterns));
+    .then(summary =>
+      summary.files.map(x => {
+        const { path, index, working_dir: workingTree } = x;
 
-        return filesObj.filter(x => matching.includes(x.path));
+        return { path, index, workingTree };
+      })
+    )
+    .then(filesObj => {
+      if (opts.patterns === optionsManager().patterns) {
+        return filesObj;
       }
 
-      return filesObj;
+      const path = filesObj.map(x => x.path);
+      const matching = matcher(path, arrify(opts.patterns));
+
+      return filesObj.filter(x => matching.includes(x.path));
     })
     .then(filesObj => {
-      if (opts.status.index !== '*') {
-        const status = filesObj.map(x => x.index);
-        const matching = matcher(status, Array.from(opts.status.index));
-
-        return filesObj.filter(x => matching.includes(x.index));
+      if (opts.status.index === optionsManager().status.index) {
+        return filesObj;
       }
 
-      return filesObj;
+      const status = filesObj.map(x => x.index);
+      const matching = matcher(status, Array.from(opts.status.index));
+
+      return filesObj.filter(x => matching.includes(x.index));
     })
     .then(filesObj => {
-      if (opts.status.workingTree !== '*') {
-        const status = filesObj.map(x => x.workingTree);
-        const matching = matcher(status, Array.from(opts.status.workingTree));
-
-        return filesObj.filter(x => matching.includes(x.workingTree));
+      if (opts.status.workingTree === optionsManager().status.workingTree) {
+        return filesObj;
       }
 
-      return filesObj;
+      const status = filesObj.map(x => x.workingTree);
+      const matching = matcher(status, Array.from(opts.status.workingTree));
+
+      return filesObj.filter(x => matching.includes(x.workingTree));
     });
 };
