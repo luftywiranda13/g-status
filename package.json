@@ -1,6 +1,6 @@
 {
   "name": "g-status",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Get the change between index (or staging-area) and working directory of a `git` repository",
   "license": "MIT",
   "repository": "https://github.com/luftywiranda13/g-status",
