@@ -40,24 +40,24 @@ module.exports = options => {
 
       return filesObj;
     })
-    .then(res => {
+    .then(filesObj => {
       if (opts.status.index !== '*') {
-        const status = res.map(x => x.index);
+        const status = filesObj.map(x => x.index);
         const matching = matcher(status, Array.from(opts.status.index));
 
-        return res.filter(x => matching.some(m => x.index.includes(m)));
+        return filesObj.filter(x => matching.includes(x.index));
       }
 
-      return res;
+      return filesObj;
     })
-    .then(res => {
+    .then(filesObj => {
       if (opts.status.workingTree !== '*') {
-        const status = res.map(x => x.workingTree);
+        const status = filesObj.map(x => x.workingTree);
         const matching = matcher(status, Array.from(opts.status.workingTree));
 
-        return res.filter(x => matching.some(m => x.workingTree.includes(m)));
+        return filesObj.filter(x => matching.includes(x.workingTree));
       }
 
-      return res;
+      return filesObj;
     });
 };
