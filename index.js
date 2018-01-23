@@ -31,25 +31,9 @@ module.exports = options => {
         return { path, index, workingTree };
       })
     )
+    .then(filesObj => filterer(filesObj, arrify(opts.patterns), 'path'))
+    .then(filesObj => filterer(filesObj, opts.status.index, 'index'))
     .then(filesObj => {
-      if (opts.patterns === optionsManager().patterns) {
-        return filesObj;
-      }
-
-      return filterer(filesObj, arrify(opts.patterns), 'path');
-    })
-    .then(filesObj => {
-      if (opts.status.index === optionsManager().status.index) {
-        return filesObj;
-      }
-
-      return filterer(filesObj, opts.status.index, 'index');
-    })
-    .then(filesObj => {
-      if (opts.status.workingTree === optionsManager().status.workingTree) {
-        return filesObj;
-      }
-
       return filterer(filesObj, opts.status.workingTree, 'workingTree');
     });
 };

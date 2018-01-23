@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "arrify": "^1.0.1",
+    "lodash.isequal": "^4.5.0",
     "matcher": "^1.0.0",
     "merge-options": "^1.0.0",
     "simple-git": "^1.85.0"
