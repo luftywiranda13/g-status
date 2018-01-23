@@ -25,6 +25,10 @@ const getSummary = options => {
 };
 
 const isMatch = (data, patterns) => {
+  if (patterns.toString() === '*') {
+    return true;
+  }
+
   patterns = Array.isArray(patterns) ? patterns : Array.from(patterns);
 
   return matcher([data], patterns).length >= 1;
@@ -34,7 +38,7 @@ module.exports = options => {
   const opts = optionsManager(options);
 
   return getSummary(opts).then(({ files }) => {
-    return files
+    const formattedSummary = files
       .map(({ path, index, working_dir: workingTree }) => ({
         path,
         index,
@@ -43,5 +47,7 @@ module.exports = options => {
       .filter(x => isMatch(x.path, arrify(opts.patterns)))
       .filter(x => isMatch(x.index, opts.status.index))
       .filter(x => isMatch(x.workingTree, opts.status.workingTree));
+
+    return formattedSummary;
   });
 };
