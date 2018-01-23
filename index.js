@@ -1,5 +1,6 @@
 'use strict';
 
+const arrify = require('arrify');
 const git = require('simple-git/promise');
 const matcher = require('matcher');
 const mergeOptions = require('merge-options');
@@ -39,7 +40,7 @@ module.exports = options => {
         index,
         workingTree,
       }))
-      .filter(x => isMatch(x.path, opts.patterns))
+      .filter(x => isMatch(x.path, arrify(opts.patterns)))
       .filter(x => isMatch(x.index, opts.status.index))
       .filter(x => isMatch(x.workingTree, opts.status.workingTree));
   });
