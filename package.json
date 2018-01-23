@@ -42,6 +42,9 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "<rootDir>/__tests__/__fixtures__/"
+    ],
     "transform": {
       "^.+\\.js$": "async-to-gen"
     }
