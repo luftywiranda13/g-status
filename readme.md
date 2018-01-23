@@ -77,6 +77,8 @@ gStatus({ status: { index: 'M', workingTree: 'M' } }).then(res => {
 });
 ```
 
+See the [tests](https://github.com/luftywiranda13/g-status/blob/master/test.js) for more usage examples and expected matches.
+
 ## API
 
 ### gStatus([options])
