@@ -2,8 +2,9 @@
 
 const arrify = require('arrify');
 const git = require('simple-git/promise');
-const matcher = require('matcher');
 const mergeOptions = require('merge-options');
+
+const filterer = require('./filterer');
 
 const optionsManager = options => {
   const DEFAULTS = {
@@ -30,34 +31,9 @@ module.exports = options => {
         return { path, index, workingTree };
       })
     )
+    .then(filesObj => filterer(filesObj, arrify(opts.patterns), 'path'))
+    .then(filesObj => filterer(filesObj, opts.status.index, 'index'))
     .then(filesObj => {
-      if (opts.patterns === optionsManager().patterns) {
-        return filesObj;
-      }
-
-      const path = filesObj.map(x => x.path);
-      const matching = matcher(path, arrify(opts.patterns));
-
-      return filesObj.filter(x => matching.includes(x.path));
-    })
-    .then(filesObj => {
-      if (opts.status.index === optionsManager().status.index) {
-        return filesObj;
-      }
-
-      const status = filesObj.map(x => x.index);
-      const matching = matcher(status, Array.from(opts.status.index));
-
-      return filesObj.filter(x => matching.includes(x.index));
-    })
-    .then(filesObj => {
-      if (opts.status.workingTree === optionsManager().status.workingTree) {
-        return filesObj;
-      }
-
-      const status = filesObj.map(x => x.workingTree);
-      const matching = matcher(status, Array.from(opts.status.workingTree));
-
-      return filesObj.filter(x => matching.includes(x.workingTree));
+      return filterer(filesObj, opts.status.workingTree, 'workingTree');
     });
 };

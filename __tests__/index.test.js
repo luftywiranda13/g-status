@@ -5,7 +5,7 @@ const { outputFileSync } = require('fs-extra');
 const execa = require('execa');
 const fixtures = require('fixturez');
 
-const gStatus = require('./');
+const gStatus = require('../');
 
 const f = fixtures(__dirname);
 
