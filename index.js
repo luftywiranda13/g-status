@@ -23,6 +23,7 @@ module.exports = options => {
   const opts = optionsManager(options);
 
   return git(opts.cwd)
+    .silent(true)
     .status()
     .then(summary =>
       summary.files.map(x => {
@@ -35,5 +36,8 @@ module.exports = options => {
     .then(filesObj => filterer(filesObj, opts.status.index, 'index'))
     .then(filesObj => {
       return filterer(filesObj, opts.status.workingTree, 'workingTree');
+    })
+    .catch(err => {
+      throw err;
     });
 };
