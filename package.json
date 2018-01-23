@@ -18,7 +18,8 @@
     "test": "xo && jest --coverage"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "filterer.js"
   ],
   "dependencies": {
     "arrify": "^1.0.1",
