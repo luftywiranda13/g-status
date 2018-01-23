@@ -1,56 +1,38 @@
 'use strict';
 
-const { join } = require('path');
-const { outputFileSync } = require('fs-extra');
-const execa = require('execa');
-const fixtures = require('fixturez');
+jest.mock('simple-git/promise');
+const git = require('simple-git/promise');
 
 const gStatus = require('./');
 
-const f = fixtures(__dirname);
+const dummyFiles = [
+  { path: '.travis.yml', index: ' ', working_dir: 'D' },
+  { path: '.travis.yml', index: 'A', working_dir: ' ' },
+  { path: 'index.js', index: 'A', working_dir: ' ' },
+  { path: 'package.json', index: 'A', working_dir: 'M' },
+  { path: 'readme.md', index: ' ', working_dir: 'D' },
+  { path: 'readme.md', index: 'A', working_dir: ' ' },
+  { path: 'test.js -> index.test.js', index: 'R', working_dir: ' ' },
+  { path: 'filterer.js', index: '?', working_dir: '?' },
+];
 
-describe('clean repo', () => {
-  let tmpPath;
-
-  beforeEach(() => {
-    tmpPath = f.copy('dummy-repo');
-
-    execa.sync('git', ['init'], { cwd: tmpPath });
-    execa.sync('git', ['add', '--all'], { cwd: tmpPath });
-    execa.sync('git', ['commit', '-m', 'initial commit'], { cwd: tmpPath });
+const mockGit = files =>
+  git.mockReturnValue({
+    silent: () => ({
+      status: jest.fn(() => {
+        return Promise.resolve({ files });
+      }),
+    }),
   });
 
-  test('bare', async () => {
-    expect.assertions(1);
+test('examples in `readme`', () => {
+  mockGit([
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'M', workingTree: 'M' },
+    { path: 'readme.md', index: ' ', workingTree: 'M' },
+  ]);
 
-    await expect(gStatus({ cwd: tmpPath })).resolves.toEqual([]);
-  });
-});
-
-describe('dirty repo', () => {
-  let tmpPath;
-
-  beforeEach(() => {
-    tmpPath = f.copy('dummy-repo');
-
-    execa.sync('git', ['init'], { cwd: tmpPath });
-    execa.sync('git', ['add', 'index.js', 'readme.md'], { cwd: tmpPath });
-    execa.sync('git', ['commit', '-m', 'initial commit'], { cwd: tmpPath });
-
-    execa.sync('git', ['add', '.travis.yml'], { cwd: tmpPath });
-
-    outputFileSync(join(tmpPath, 'readme.md'), 'foo');
-    outputFileSync(join(tmpPath, 'index.js'), 'foo');
-    execa.sync('git', ['add', 'index.js'], { cwd: tmpPath });
-
-    outputFileSync(join(tmpPath, 'index.js'), 'bar');
-  });
-
-  test('bare', async () => {
-    expect.assertions(1);
-
-    const res = await gStatus({ cwd: tmpPath });
-
+  gStatus().then(res => {
     expect(res).toEqual([
       { path: '.travis.yml', index: 'A', workingTree: ' ' },
       { path: 'index.js', index: 'M', workingTree: 'M' },
@@ -58,34 +40,151 @@ describe('dirty repo', () => {
     ]);
   });
 
-  test('patterns', async () => {
-    expect.assertions(1);
-
-    const res = await gStatus({ cwd: tmpPath, patterns: ['!*.js', '!*.md'] });
-
+  gStatus({ patterns: ['!*.js', '!*.md'] }).then(res => {
     expect(res).toEqual([
       { path: '.travis.yml', index: 'A', workingTree: ' ' },
     ]);
   });
 
-  test('status', async () => {
-    expect.assertions(3);
-
-    const res1 = await gStatus({ cwd: tmpPath, status: { index: 'MA' } });
-    expect(res1).toEqual([
+  gStatus({ status: { index: 'MA' } }).then(res => {
+    expect(res).toEqual([
       { path: '.travis.yml', index: 'A', workingTree: ' ' },
       { path: 'index.js', index: 'M', workingTree: 'M' },
     ]);
+  });
 
-    const res2 = await gStatus({ cwd: tmpPath, status: { workingTree: ' ' } });
-    expect(res2).toEqual([
+  gStatus({ status: { workingTree: ' ' } }).then(res => {
+    expect(res).toEqual([
       { path: '.travis.yml', index: 'A', workingTree: ' ' },
     ]);
+  });
 
-    const res3 = await gStatus({
-      cwd: tmpPath,
-      status: { index: 'M', workingTree: 'M' },
-    });
-    expect(res3).toEqual([{ path: 'index.js', index: 'M', workingTree: 'M' }]);
+  gStatus({ status: { index: 'M', workingTree: 'M' } }).then(res => {
+    expect(res).toEqual([{ path: 'index.js', index: 'M', workingTree: 'M' }]);
+  });
+});
+
+it('returns empty array in clean repo', async () => {
+  mockGit([]);
+  await expect(gStatus()).resolves.toEqual([]);
+});
+
+describe('dirty repo', () => {
+  beforeAll(() => {
+    mockGit(dummyFiles);
+  });
+
+  it('respects `patterns` for path', async () => {
+    await expect(gStatus({ patterns: '*' })).resolves.toEqual([
+      { path: '.travis.yml', index: ' ', workingTree: 'D' },
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'package.json', index: 'A', workingTree: 'M' },
+      { path: 'readme.md', index: ' ', workingTree: 'D' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+      { path: 'filterer.js', index: '?', workingTree: '?' },
+    ]);
+
+    await expect(gStatus({ patterns: '*.js' })).resolves.toEqual([
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+      { path: 'filterer.js', index: '?', workingTree: '?' },
+    ]);
+
+    await expect(gStatus({ patterns: '!*' })).resolves.toEqual([]);
+  });
+
+  it('respects `status` for `index`', async () => {
+    await expect(gStatus({ status: { index: '*' } })).resolves.toEqual([
+      { path: '.travis.yml', index: ' ', workingTree: 'D' },
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'package.json', index: 'A', workingTree: 'M' },
+      { path: 'readme.md', index: ' ', workingTree: 'D' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+      { path: 'filterer.js', index: '?', workingTree: '?' },
+    ]);
+
+    await expect(gStatus({ status: { index: 'A' } })).resolves.toEqual([
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'package.json', index: 'A', workingTree: 'M' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+    ]);
+
+    await expect(gStatus({ status: { index: 'R' } })).resolves.toEqual([
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    ]);
+
+    await expect(gStatus({ status: { index: 'AR ' } })).resolves.toEqual([
+      { path: '.travis.yml', index: ' ', workingTree: 'D' },
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'package.json', index: 'A', workingTree: 'M' },
+      { path: 'readme.md', index: ' ', workingTree: 'D' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    ]);
+  });
+
+  it('respects `status` for `workingTree`', async () => {
+    await expect(gStatus({ status: { workingTree: '*' } })).resolves.toEqual([
+      { path: '.travis.yml', index: ' ', workingTree: 'D' },
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'package.json', index: 'A', workingTree: 'M' },
+      { path: 'readme.md', index: ' ', workingTree: 'D' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+      { path: 'filterer.js', index: '?', workingTree: '?' },
+    ]);
+
+    await expect(gStatus({ status: { workingTree: 'A' } })).resolves.toEqual(
+      []
+    );
+
+    await expect(gStatus({ status: { workingTree: 'AR ' } })).resolves.toEqual([
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    ]);
+  });
+
+  it('knows fully staged files', async () => {
+    await expect(
+      gStatus({ status: { index: 'AMDR ', workingTree: ' ' } })
+    ).resolves.toEqual([
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'index.js', index: 'A', workingTree: ' ' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    ]);
+
+    await expect(
+      gStatus({
+        patterns: '!*.js',
+        status: { index: 'AMDR ', workingTree: ' ' },
+      })
+    ).resolves.toEqual([
+      { path: '.travis.yml', index: 'A', workingTree: ' ' },
+      { path: 'readme.md', index: 'A', workingTree: ' ' },
+    ]);
+  });
+
+  it('knows partially staged files', async () => {
+    await expect(
+      gStatus({ status: { index: 'DRAM', workingTree: 'AMDR' } })
+    ).resolves.toEqual([
+      { path: 'package.json', index: 'A', workingTree: 'M' },
+    ]);
+  });
+
+  it('knows untracked files', async () => {
+    await expect(
+      gStatus({ status: { index: '?', workingTree: '?' } })
+    ).resolves.toEqual([{ path: 'filterer.js', index: '?', workingTree: '?' }]);
   });
 });
