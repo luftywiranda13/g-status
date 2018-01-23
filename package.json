@@ -18,12 +18,9 @@
     "test": "xo && jest --coverage"
   },
   "files": [
-    "index.js",
-    "filterer.js"
+    "index.js"
   ],
   "dependencies": {
-    "arrify": "^1.0.1",
-    "lodash.isequal": "^4.5.0",
     "matcher": "^1.0.0",
     "merge-options": "^1.0.0",
     "simple-git": "^1.85.0"
@@ -43,9 +40,6 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testPathIgnorePatterns": [
-      "<rootDir>/__tests__/__fixtures__/"
-    ],
     "transform": {
       "^.+\\.js$": "async-to-gen"
     }

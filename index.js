@@ -1,10 +1,8 @@
 'use strict';
 
-const arrify = require('arrify');
 const git = require('simple-git/promise');
+const matcher = require('matcher');
 const mergeOptions = require('merge-options');
-
-const filterer = require('./filterer');
 
 const optionsManager = options => {
   const DEFAULTS = {
@@ -19,25 +17,30 @@ const optionsManager = options => {
   return mergeOptions(DEFAULTS, options);
 };
 
+const getSummary = options => {
+  return git(options.cwd)
+    .silent(true)
+    .status();
+};
+
+const isMatch = (data, patterns) => {
+  patterns = Array.isArray(patterns) ? patterns : Array.from(patterns);
+
+  return matcher([data], patterns).length >= 1;
+};
+
 module.exports = options => {
   const opts = optionsManager(options);
 
-  return git(opts.cwd)
-    .silent(true)
-    .status()
-    .then(summary =>
-      summary.files.map(x => {
-        const { path, index, working_dir: workingTree } = x;
-
-        return { path, index, workingTree };
-      })
-    )
-    .then(filesObj => filterer(filesObj, arrify(opts.patterns), 'path'))
-    .then(filesObj => filterer(filesObj, opts.status.index, 'index'))
-    .then(filesObj => {
-      return filterer(filesObj, opts.status.workingTree, 'workingTree');
-    })
-    .catch(err => {
-      throw err;
-    });
+  return getSummary(opts).then(({ files }) => {
+    return files
+      .map(({ path, index, working_dir: workingTree }) => ({
+        path,
+        index,
+        workingTree,
+      }))
+      .filter(x => isMatch(x.path, opts.patterns))
+      .filter(x => isMatch(x.index, opts.status.index))
+      .filter(x => isMatch(x.workingTree, opts.status.workingTree));
+  });
 };
