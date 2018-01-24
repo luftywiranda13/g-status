@@ -83,7 +83,7 @@ See the [tests](https://github.com/luftywiranda13/g-status/blob/master/test.js) 
 
 ### gStatus([options])
 
-Returns `Promise<Array>` of `Object` with `path`, `index`, and `workingTree` as the key.
+Returns `Promise<{ path: string, index: string, workingTree: string }[]>`.
 
 #### options
 
