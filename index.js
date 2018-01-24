@@ -1,11 +1,11 @@
 'use strict';
 
 const arrify = require('arrify');
+const extend = require('extend');
 const git = require('simple-git/promise');
 const matcher = require('matcher');
-const mergeOptions = require('merge-options');
 
-const optionsManager = options => {
+const optionsManager = (options = {}) => {
   const DEFAULTS = {
     cwd: process.cwd(),
     patterns: '*',
@@ -15,13 +15,14 @@ const optionsManager = options => {
     },
   };
 
-  return mergeOptions(DEFAULTS, options);
+  return extend(true, DEFAULTS, options);
 };
 
-const getSummary = options => {
-  return git(options.cwd)
+const getFiles = cwd => {
+  return git(cwd)
     .silent(true)
-    .status();
+    .status()
+    .then(({ files }) => files);
 };
 
 const isMatch = (data, patterns) => {
@@ -37,8 +38,8 @@ const isMatch = (data, patterns) => {
 module.exports = options => {
   const opts = optionsManager(options);
 
-  return getSummary(opts).then(({ files }) => {
-    const formattedSummary = files
+  return getFiles(opts.cwd).then(files => {
+    const filteredFiles = files
       .map(({ path, index, working_dir: workingTree }) => ({
         path,
         index,
@@ -48,6 +49,6 @@ module.exports = options => {
       .filter(x => isMatch(x.index, opts.status.index))
       .filter(x => isMatch(x.workingTree, opts.status.workingTree));
 
-    return formattedSummary;
+    return filteredFiles;
   });
 };
