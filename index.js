@@ -4,14 +4,14 @@ const arrify = require('arrify');
 const git = require('simple-git/promise');
 const matcher = require('matcher');
 
-const optionsManager = options => {
+const patternsManager = patterns => {
   const DEFAULTS = {
     path: '*',
     index: '*',
     workingTree: '*',
   };
 
-  const merged = Object.assign({}, DEFAULTS, options);
+  const merged = Object.assign({}, DEFAULTS, patterns);
 
   return Object.assign(
     {},
@@ -30,33 +30,31 @@ const getFiles = cwd => {
     .then(({ files }) => files);
 };
 
-const isMatch = (data, patterns) => {
-  if (patterns.toString() === '*') {
-    return true;
-  }
+const isMatch = (obj, patterns) => {
+  return Object.keys(obj).every(key => {
+    if (patterns[key].toString() === '*') {
+      return true;
+    }
 
-  return matcher([data], patterns).length >= 1;
+    return matcher(Array.of(obj[key]), patterns[key]).length >= 1;
+  });
 };
 
-module.exports = (cwd = process.cwd(), options) => {
+module.exports = (cwd = process.cwd(), patterns) => {
   if (typeof cwd === 'object') {
-    options = cwd;
-    cwd = process.cwd;
+    patterns = cwd;
+    cwd = process.cwd();
   }
 
-  const opts = optionsManager(options);
+  patterns = patternsManager(patterns);
 
-  return getFiles(cwd).then(files => {
-    const filteredFiles = files
-      .map(({ path, index, working_dir: workingTree }) => ({
-        path,
-        index,
-        workingTree,
-      }))
-      .filter(x => isMatch(x.path, opts.path))
-      .filter(x => isMatch(x.index, opts.index))
-      .filter(x => isMatch(x.workingTree, opts.workingTree));
-
-    return filteredFiles;
-  });
+  return getFiles(cwd)
+    .then(files => {
+      return files.map(file => ({
+        path: file.path,
+        index: file.index,
+        workingTree: file.working_dir,
+      }));
+    })
+    .then(files => files.filter(x => isMatch(x, patterns)));
 };

@@ -5,7 +5,7 @@ const git = require('simple-git/promise');
 
 const gStatus = require('./');
 
-const dummyFiles = [
+const dummySummary = [
   { path: '.travis.yml', index: ' ', working_dir: 'D' },
   { path: '.travis.yml', index: 'A', working_dir: ' ' },
   { path: 'index.js', index: 'A', working_dir: ' ' },
@@ -16,7 +16,7 @@ const dummyFiles = [
   { path: 'filterer.js', index: '?', working_dir: '?' },
 ];
 
-const mockGit = files =>
+const mockGit = files => {
   git.mockReturnValue({
     silent: () => ({
       status: jest.fn(() => {
@@ -24,6 +24,7 @@ const mockGit = files =>
       }),
     }),
   });
+};
 
 test('examples in `readme`', () => {
   mockGit([
@@ -66,120 +67,113 @@ test('examples in `readme`', () => {
 
 it('returns empty array in clean repo', async () => {
   mockGit([]);
+
   await expect(gStatus()).resolves.toEqual([]);
 });
 
-describe('dirty repo', () => {
-  beforeAll(() => {
-    mockGit(dummyFiles);
-  });
+it('filters `path`', async () => {
+  mockGit(dummySummary);
 
-  it('filters `path`', async () => {
-    await expect(gStatus({ path: '*' })).resolves.toEqual([
-      { path: '.travis.yml', index: ' ', workingTree: 'D' },
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'package.json', index: 'A', workingTree: 'M' },
-      { path: 'readme.md', index: ' ', workingTree: 'D' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-      { path: 'filterer.js', index: '?', workingTree: '?' },
-    ]);
+  await expect(gStatus({ path: '*' })).resolves.toEqual([
+    { path: '.travis.yml', index: ' ', workingTree: 'D' },
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'package.json', index: 'A', workingTree: 'M' },
+    { path: 'readme.md', index: ' ', workingTree: 'D' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    { path: 'filterer.js', index: '?', workingTree: '?' },
+  ]);
 
-    await expect(gStatus({ path: '*.js' })).resolves.toEqual([
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-      { path: 'filterer.js', index: '?', workingTree: '?' },
-    ]);
+  await expect(gStatus({ path: '*.js' })).resolves.toEqual([
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    { path: 'filterer.js', index: '?', workingTree: '?' },
+  ]);
 
-    await expect(gStatus({ path: '!*' })).resolves.toEqual([]);
-  });
+  await expect(gStatus({ path: '!*' })).resolves.toEqual([]);
+});
 
-  it('filters `index`', async () => {
-    await expect(gStatus({ index: '*' })).resolves.toEqual([
-      { path: '.travis.yml', index: ' ', workingTree: 'D' },
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'package.json', index: 'A', workingTree: 'M' },
-      { path: 'readme.md', index: ' ', workingTree: 'D' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-      { path: 'filterer.js', index: '?', workingTree: '?' },
-    ]);
+it('filters `index`', async () => {
+  await expect(gStatus({ index: '*' })).resolves.toEqual([
+    { path: '.travis.yml', index: ' ', workingTree: 'D' },
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'package.json', index: 'A', workingTree: 'M' },
+    { path: 'readme.md', index: ' ', workingTree: 'D' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    { path: 'filterer.js', index: '?', workingTree: '?' },
+  ]);
 
-    await expect(gStatus({ index: 'A' })).resolves.toEqual([
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'package.json', index: 'A', workingTree: 'M' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-    ]);
+  await expect(gStatus({ index: 'A' })).resolves.toEqual([
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'package.json', index: 'A', workingTree: 'M' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+  ]);
 
-    await expect(gStatus({ index: 'R' })).resolves.toEqual([
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-    ]);
+  await expect(gStatus({ index: 'R' })).resolves.toEqual([
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+  ]);
 
-    await expect(gStatus({ index: 'AR ' })).resolves.toEqual([
-      { path: '.travis.yml', index: ' ', workingTree: 'D' },
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'package.json', index: 'A', workingTree: 'M' },
-      { path: 'readme.md', index: ' ', workingTree: 'D' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-    ]);
-  });
+  await expect(gStatus({ index: 'AR ' })).resolves.toEqual([
+    { path: '.travis.yml', index: ' ', workingTree: 'D' },
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'package.json', index: 'A', workingTree: 'M' },
+    { path: 'readme.md', index: ' ', workingTree: 'D' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+  ]);
+});
 
-  it('filters `workingTree`', async () => {
-    await expect(gStatus({ workingTree: '*' })).resolves.toEqual([
-      { path: '.travis.yml', index: ' ', workingTree: 'D' },
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'package.json', index: 'A', workingTree: 'M' },
-      { path: 'readme.md', index: ' ', workingTree: 'D' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-      { path: 'filterer.js', index: '?', workingTree: '?' },
-    ]);
+it('filters `workingTree`', async () => {
+  await expect(gStatus({ workingTree: '*' })).resolves.toEqual([
+    { path: '.travis.yml', index: ' ', workingTree: 'D' },
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'package.json', index: 'A', workingTree: 'M' },
+    { path: 'readme.md', index: ' ', workingTree: 'D' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+    { path: 'filterer.js', index: '?', workingTree: '?' },
+  ]);
 
-    await expect(gStatus({ workingTree: 'A' })).resolves.toEqual([]);
+  await expect(gStatus({ workingTree: 'A' })).resolves.toEqual([]);
 
-    await expect(gStatus({ workingTree: 'AR ' })).resolves.toEqual([
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-    ]);
-  });
+  await expect(gStatus({ workingTree: 'AR ' })).resolves.toEqual([
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+  ]);
+});
 
-  it('knows fully staged files', async () => {
-    await expect(
-      gStatus({ index: 'AMDR ', workingTree: ' ' })
-    ).resolves.toEqual([
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'index.js', index: 'A', workingTree: ' ' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-      { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
-    ]);
+it('knows fully staged files', async () => {
+  await expect(gStatus({ index: 'AMDR ', workingTree: ' ' })).resolves.toEqual([
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'index.js', index: 'A', workingTree: ' ' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+    { path: 'test.js -> index.test.js', index: 'R', workingTree: ' ' },
+  ]);
 
-    await expect(
-      gStatus({ path: '!*.js', index: 'AMDR ', workingTree: ' ' })
-    ).resolves.toEqual([
-      { path: '.travis.yml', index: 'A', workingTree: ' ' },
-      { path: 'readme.md', index: 'A', workingTree: ' ' },
-    ]);
-  });
+  await expect(
+    gStatus({ path: '!*.js', index: 'AMDR ', workingTree: ' ' })
+  ).resolves.toEqual([
+    { path: '.travis.yml', index: 'A', workingTree: ' ' },
+    { path: 'readme.md', index: 'A', workingTree: ' ' },
+  ]);
+});
 
-  it('knows partially staged files', async () => {
-    await expect(
-      gStatus({ index: 'DRAM', workingTree: 'AMDR' })
-    ).resolves.toEqual([
-      { path: 'package.json', index: 'A', workingTree: 'M' },
-    ]);
-  });
+it('knows partially staged files', async () => {
+  await expect(
+    gStatus({ index: 'DRAM', workingTree: 'AMDR' })
+  ).resolves.toEqual([{ path: 'package.json', index: 'A', workingTree: 'M' }]);
+});
 
-  it('knows untracked files', async () => {
-    await expect(gStatus({ index: '?', workingTree: '?' })).resolves.toEqual([
-      { path: 'filterer.js', index: '?', workingTree: '?' },
-    ]);
-  });
+it('knows untracked files', async () => {
+  await expect(gStatus({ index: '?', workingTree: '?' })).resolves.toEqual([
+    { path: 'filterer.js', index: '?', workingTree: '?' },
+  ]);
 });
