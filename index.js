@@ -4,22 +4,6 @@ const arrify = require('arrify');
 const git = require('simple-git/promise');
 const matcher = require('matcher');
 
-const patternsManager = patterns => {
-  const DEFAULTS = {
-    path: '*',
-    index: '*',
-    workingTree: '*',
-  };
-
-  const merged = Object.assign({}, DEFAULTS, patterns);
-
-  return {
-    path: arrify(merged.path),
-    index: Array.from(merged.index),
-    workingTree: Array.from(merged.workingTree),
-  };
-};
-
 const getFiles = cwd => {
   return git(cwd)
     .silent(true)
@@ -37,13 +21,17 @@ const isMatch = (obj, patterns) => {
   });
 };
 
-module.exports = (cwd = process.cwd(), patterns) => {
-  if (typeof cwd === 'object') {
-    patterns = cwd;
-    cwd = process.cwd();
-  }
-
-  patterns = patternsManager(patterns);
+module.exports = ({
+  cwd = process.cwd,
+  path = '*',
+  index = '*',
+  workingTree = '*',
+} = {}) => {
+  const patterns = {
+    path: arrify(path),
+    index: Array.from(index),
+    workingTree: Array.from(workingTree),
+  };
 
   return getFiles(cwd)
     .then(files => {

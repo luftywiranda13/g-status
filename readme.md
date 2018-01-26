@@ -14,7 +14,7 @@ Think of `git status` or `git status --porcelain`, but returns a _ready-to-consu
 * Maintained
 * Accepts simple [wildcard matching](https://github.com/sindresorhus/matcher) patterns
 * Promise API
-* Ability to get specific results based on status codes, see [Patterns](#patterns)
+* Ability to get specific results based on status codes
 * Knows which files are partially/fully-staged
 
 ## Installation
@@ -80,20 +80,20 @@ See the [tests](https://github.com/luftywiranda13/g-status/blob/master/test.js) 
 
 ## API
 
-### gStatus([cwd][, patterns])
+### gStatus([options])
 
 Returns `Promise<{ path: string, index: string, workingTree: string }[]>`.
 
-#### cwd
+#### options
+
+Type: `Object`
+
+##### cwd
 
 Type: `string`<br />
 Default: `process.cwd()`
 
 Current working directory.
-
-#### patterns
-
-Type: `Object`
 
 ##### path
 
