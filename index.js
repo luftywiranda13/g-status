@@ -13,14 +13,11 @@ const patternsManager = patterns => {
 
   const merged = Object.assign({}, DEFAULTS, patterns);
 
-  return Object.assign(
-    {},
-    {
-      path: arrify(merged.path),
-      index: Array.from(merged.index),
-      workingTree: Array.from(merged.workingTree),
-    }
-  );
+  return {
+    path: arrify(merged.path),
+    index: Array.from(merged.index),
+    workingTree: Array.from(merged.workingTree),
+  };
 };
 
 const getFiles = cwd => {
@@ -50,10 +47,10 @@ module.exports = (cwd = process.cwd(), patterns) => {
 
   return getFiles(cwd)
     .then(files => {
-      return files.map(file => ({
-        path: file.path,
-        index: file.index,
-        workingTree: file.working_dir,
+      return files.map(({ path, index, working_dir: workingTree }) => ({
+        path,
+        index,
+        workingTree,
       }));
     })
     .then(files => files.filter(x => isMatch(x, patterns)));
