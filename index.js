@@ -22,7 +22,7 @@ const isMatch = (obj, patterns) => {
 };
 
 module.exports = ({
-  cwd = process.cwd,
+  cwd = process.cwd(),
   path = '*',
   index = '*',
   workingTree = '*',
