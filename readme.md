@@ -14,7 +14,7 @@ Think of `git status` or `git status --porcelain`, but returns a _ready-to-consu
 * Maintained
 * Accepts simple [wildcard matching](https://github.com/sindresorhus/matcher) patterns
 * Promise API
-* Ability to get specific results based on status codes, see [Status option](#status)
+* Ability to get specific results based on status codes, see [Patterns](#patterns)
 * Knows which files are partially/fully-staged
 
 ## Installation
