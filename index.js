@@ -17,6 +17,10 @@ const isMatch = (obj, patterns) => {
       return true;
     }
 
+    // `matcher()` is used instead of `matcher.isMatch()`
+    // because `matcher()` accepts patterns in array format.
+
+    // If nothing's matched, `matcher()` returns an empty array.
     return matcher(Array.of(obj[key]), patterns[key]).length >= 1;
   });
 };
