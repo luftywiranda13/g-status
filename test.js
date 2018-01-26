@@ -19,18 +19,16 @@ const dummySummary = [
 const mockGit = files => {
   git.mockReturnValue({
     silent: () => ({
-      status: jest.fn(() => {
-        return Promise.resolve({ files });
-      }),
+      status: jest.fn(() => Promise.resolve({ files })),
     }),
   });
 };
 
 test('examples in `readme`', () => {
   mockGit([
-    { path: '.travis.yml', index: 'A', workingTree: ' ' },
-    { path: 'index.js', index: 'M', workingTree: 'M' },
-    { path: 'readme.md', index: ' ', workingTree: 'M' },
+    { path: '.travis.yml', index: 'A', working_dir: ' ' },
+    { path: 'index.js', index: 'M', working_dir: 'M' },
+    { path: 'readme.md', index: ' ', working_dir: 'M' },
   ]);
 
   gStatus().then(res => {
