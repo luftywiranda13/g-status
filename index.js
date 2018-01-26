@@ -1,21 +1,26 @@
 'use strict';
 
 const arrify = require('arrify');
-const extend = require('extend');
 const git = require('simple-git/promise');
 const matcher = require('matcher');
 
-const optionsManager = (options = {}) => {
+const patternsManager = patterns => {
   const DEFAULTS = {
-    cwd: process.cwd(),
-    patterns: '*',
-    status: {
-      index: '*',
-      workingTree: '*',
-    },
+    path: '*',
+    index: '*',
+    workingTree: '*',
   };
 
-  return extend(true, DEFAULTS, options);
+  const merged = Object.assign({}, DEFAULTS, patterns);
+
+  return Object.assign(
+    {},
+    {
+      path: arrify(merged.path),
+      index: Array.from(merged.index),
+      workingTree: Array.from(merged.workingTree),
+    }
+  );
 };
 
 const getFiles = cwd => {
@@ -25,30 +30,31 @@ const getFiles = cwd => {
     .then(({ files }) => files);
 };
 
-const isMatch = (data, patterns) => {
-  if (patterns.toString() === '*') {
-    return true;
-  }
+const isMatch = (obj, patterns) => {
+  return Object.keys(obj).every(key => {
+    if (patterns[key].toString() === '*') {
+      return true;
+    }
 
-  patterns = Array.isArray(patterns) ? patterns : Array.from(patterns);
-
-  return matcher([data], patterns).length >= 1;
+    return matcher(Array.of(obj[key]), patterns[key]).length >= 1;
+  });
 };
 
-module.exports = options => {
-  const opts = optionsManager(options);
+module.exports = (cwd = process.cwd(), patterns) => {
+  if (typeof cwd === 'object') {
+    patterns = cwd;
+    cwd = process.cwd();
+  }
 
-  return getFiles(opts.cwd).then(files => {
-    const filteredFiles = files
-      .map(({ path, index, working_dir: workingTree }) => ({
-        path,
-        index,
-        workingTree,
-      }))
-      .filter(x => isMatch(x.path, arrify(opts.patterns)))
-      .filter(x => isMatch(x.index, opts.status.index))
-      .filter(x => isMatch(x.workingTree, opts.status.workingTree));
+  patterns = patternsManager(patterns);
 
-    return filteredFiles;
-  });
+  return getFiles(cwd)
+    .then(files => {
+      return files.map(file => ({
+        path: file.path,
+        index: file.index,
+        workingTree: file.working_dir,
+      }));
+    })
+    .then(files => files.filter(x => isMatch(x, patterns)));
 };

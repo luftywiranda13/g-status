@@ -12,7 +12,7 @@ Think of `git status` or `git status --porcelain`, but returns a _ready-to-consu
 ## Why
 
 * Maintained
-* Accepts simple [wildcard matching](https://github.com/sindresorhus/matcher)
+* Accepts simple [wildcard matching](https://github.com/sindresorhus/matcher) patterns
 * Promise API
 * Ability to get specific results based on status codes, see [Status option](#status)
 * Knows which files are partially/fully-staged
@@ -47,14 +47,13 @@ gStatus().then(res => {
   */
 });
 
-// Patterns for `path`
-gStatus({ patterns: ['!*.js', '!*.md'] }).then(res => {
+gStatus({ path: ['!*.js', '!*.md'] }).then(res => {
   console.log(res);
   //=> [{ path: '.travis.yml', index: 'A', workingTree: ' ' }]
 });
 
 // Files marked as `Modified` or `Added` in the staging area,
-gStatus({ status: { index: 'MA' } }).then(res => {
+gStatus({ index: 'MA' }).then(res => {
   console.log(res);
   /*
     [
@@ -65,13 +64,13 @@ gStatus({ status: { index: 'MA' } }).then(res => {
 });
 
 // Files that arenʼt changed in the working tree
-gStatus({ status: { workingTree: ' ' } }).then(res => {
+gStatus({ workingTree: ' ' }).then(res => {
   console.log(res);
   //=> [{ path: '.travis.yml', index: 'A', workingTree: ' ' }]
 });
 
 // Files that are marked as `Modified` both in staging area and working tree
-gStatus({ status: { index: 'M', workingTree: 'M' } }).then(res => {
+gStatus({ index: 'M', workingTree: 'M' }).then(res => {
   console.log(res);
   //=> [{ path: 'index.js', index: 'M', workingTree: 'M' }]
 });
@@ -81,49 +80,45 @@ See the [tests](https://github.com/luftywiranda13/g-status/blob/master/test.js) 
 
 ## API
 
-### gStatus([options])
+### gStatus([cwd][, patterns])
 
 Returns `Promise<{ path: string, index: string, workingTree: string }[]>`.
 
-#### options
-
-Type: `Object`
-
-##### cwd
+#### cwd
 
 Type: `string`<br />
 Default: `process.cwd()`
 
 Current working directory.
 
-##### patterns
+#### patterns
+
+Type: `Object`
+
+##### path
 
 Type: `string` | `string[]`<br />
 Default: `*`
 
-Case-insensitive. Use `*` to match zero or more characters. A pattern starting with `!` will be negated.
+Use `*` to match zero or more characters. A pattern starting with `!` will be negated.
 
-##### status
+##### index
 
-Type: `Object`
+Type: `string`<br />
+Default: `*`
+
+String of `git` status codes of the index/staging-area.
+
+##### workingTree
+
+Type: `string`<br />
+Default: `*`
+
+String of `git` status codes of the working tree.
 
 See [Short Format](https://git-scm.com/docs/git-status#_short_format) for more informations about `git` status codes.
 
 One difference is that `*` will match all value here.
-
-###### index
-
-Type: `string`<br />
-Default: `*` (all)
-
-String of `git` status codes of the index/staging-area.
-
-###### workingTree
-
-Type: `string`<br />
-Default: `*` (all)
-
-String of `git` status codes of the working tree.
 
 ## Related
 
