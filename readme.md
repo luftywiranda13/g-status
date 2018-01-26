@@ -107,17 +107,15 @@ Use `*` to match zero or more characters. A pattern starting with `!` will be ne
 Type: `string`<br />
 Default: `*`
 
-String of `git` status codes of the index/staging-area.
+String of `git` status codes of the index/staging-area, See [Short Format](https://git-scm.com/docs/git-status#_short_format).<br />
+One difference is that `*` will match all value here.
 
 ##### workingTree
 
 Type: `string`<br />
 Default: `*`
 
-String of `git` status codes of the working tree.
-
-See [Short Format](https://git-scm.com/docs/git-status#_short_format) for more informations about `git` status codes.
-
+String of `git` status codes of the working tree, See [Short Format](https://git-scm.com/docs/git-status#_short_format).<br />
 One difference is that `*` will match all value here.
 
 ## Related
