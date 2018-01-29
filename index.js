@@ -11,7 +11,7 @@ const getFiles = cwd => {
     .then(({ files }) => files);
 };
 
-const isMatch = (obj, patterns) => {
+const isMatch = patterns => obj => {
   return Object.keys(obj).every(key => {
     if (patterns[key].toString() === '*') {
       return true;
@@ -45,5 +45,5 @@ module.exports = ({
         workingTree,
       }));
     })
-    .then(files => files.filter(x => isMatch(x, patterns)));
+    .then(files => files.filter(isMatch(patterns)));
 };
