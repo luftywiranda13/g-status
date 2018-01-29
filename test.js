@@ -93,6 +93,8 @@ it('filters `path`', async () => {
 });
 
 it('filters `index`', async () => {
+  mockGit(dummySummary);
+
   await expect(gStatus({ index: '*' })).resolves.toEqual([
     { path: '.travis.yml', index: ' ', workingTree: 'D' },
     { path: '.travis.yml', index: 'A', workingTree: ' ' },
@@ -127,6 +129,8 @@ it('filters `index`', async () => {
 });
 
 it('filters `workingTree`', async () => {
+  mockGit(dummySummary);
+
   await expect(gStatus({ workingTree: '*' })).resolves.toEqual([
     { path: '.travis.yml', index: ' ', workingTree: 'D' },
     { path: '.travis.yml', index: 'A', workingTree: ' ' },
@@ -149,6 +153,8 @@ it('filters `workingTree`', async () => {
 });
 
 it('knows fully staged files', async () => {
+  mockGit(dummySummary);
+
   await expect(gStatus({ index: 'AMDR ', workingTree: ' ' })).resolves.toEqual([
     { path: '.travis.yml', index: 'A', workingTree: ' ' },
     { path: 'index.js', index: 'A', workingTree: ' ' },
@@ -165,12 +171,16 @@ it('knows fully staged files', async () => {
 });
 
 it('knows partially staged files', async () => {
+  mockGit(dummySummary);
+
   await expect(
     gStatus({ index: 'DRAM', workingTree: 'AMDR' })
   ).resolves.toEqual([{ path: 'package.json', index: 'A', workingTree: 'M' }]);
 });
 
 it('knows untracked files', async () => {
+  mockGit(dummySummary);
+
   await expect(gStatus({ index: '?', workingTree: '?' })).resolves.toEqual([
     { path: 'filterer.js', index: '?', workingTree: '?' },
   ]);
