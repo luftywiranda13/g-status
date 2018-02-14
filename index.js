@@ -33,8 +33,8 @@ module.exports = ({
 } = {}) => {
   const patterns = {
     path: arrify(path),
-    index: Array.from(index),
-    workingTree: Array.from(workingTree),
+    index: [...index],
+    workingTree: [...workingTree],
   };
 
   return getFiles(cwd)
