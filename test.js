@@ -3,7 +3,7 @@
 jest.mock('simple-git/promise');
 const git = require('simple-git/promise');
 
-const gStatus = require('./');
+const gStatus = require('.');
 
 const dummySummary = [
   { path: '.travis.yml', index: ' ', working_dir: 'D' },
