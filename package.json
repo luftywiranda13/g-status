@@ -40,8 +40,12 @@
     }
   },
   "lint-staged": {
-    "*.{js,json,md}": [
+    "*.js": [
       "xo --fix",
+      "git add"
+    ],
+    "*.{json,md}": [
+      "prettier --write",
       "git add"
     ]
   },
