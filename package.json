@@ -21,7 +21,7 @@
     "index.js"
   ],
   "dependencies": {
-    "arrify": "^1.0.1",
+    "arrify": "^2.0.0",
     "matcher": "^1.0.0",
     "simple-git": "^1.85.0"
   },
