@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "arrify": "^1.0.1",
-    "matcher": "^1.0.0",
+    "matcher": "^2.1.0",
     "simple-git": "^1.85.0"
   },
   "devDependencies": {
